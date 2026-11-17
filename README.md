@@ -6,6 +6,16 @@
 
 **Daily Log** is an offline Android app for daily reminders and a private journal — built for people who want gentle structure without accounts, cloud sync, or guilt mechanics. No streaks, no ads, no tracking. Your data stays on your phone.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/today.jpg" width="160" alt="Today — tasks grouped by time of day">
+  <img src="docs/screenshots/progress.jpg" width="160" alt="Progress — weekly overview and insights">
+  <img src="docs/screenshots/mood.jpg" width="160" alt="Mood check-in with note">
+  <img src="docs/screenshots/prayer.jpg" width="160" alt="Prayer times for Bengkulu">
+  <img src="docs/screenshots/calendar.jpg" width="160" alt="Per-task calendar and strength score">
+</p>
+
 ## Features
 
 - **Daily reminders** — reliable exact alarms for the things that matter: sleep, prayer, reading, meals, and your own habits, with optional nagging repeats and location triggers
