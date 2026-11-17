@@ -8,35 +8,30 @@
 
 ## Screenshots
 
-<table>
-  <tr>
-    <td align="center" width="20%">
-      <img src="docs/screenshots/today.jpg" width="160" alt="Today"><br>
-      <b>Today</b><br>
-      <sub>Tasks grouped by time of day, one group at a time</sub>
-    </td>
-    <td align="center" width="20%">
-      <img src="docs/screenshots/progress.jpg" width="160" alt="Progress"><br>
-      <b>Progress</b><br>
-      <sub>Weekly overview, perfect days, and insights</sub>
-    </td>
-    <td align="center" width="20%">
-      <img src="docs/screenshots/mood.jpg" width="160" alt="Mood check-in"><br>
-      <b>Mood</b><br>
-      <sub>Four check-ins a day, with an optional note</sub>
-    </td>
-    <td align="center" width="20%">
-      <img src="docs/screenshots/prayer.jpg" width="160" alt="Prayer times"><br>
-      <b>Prayer times</b><br>
-      <sub>Calculated daily for your city; reminders follow</sub>
-    </td>
-    <td align="center" width="20%">
-      <img src="docs/screenshots/calendar.jpg" width="160" alt="Per-task calendar"><br>
-      <b>Calendar</b><br>
-      <sub>Per-task calendar, strength score, and backfill</sub>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/screenshots/today.jpg" width="280" alt="Today"><br>
+  <b>Today</b> — Tasks grouped by time of day, one group at a time
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/progress.jpg" width="280" alt="Progress"><br>
+  <b>Progress</b> — Weekly overview, perfect days, and insights
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/mood.jpg" width="280" alt="Mood check-in"><br>
+  <b>Mood</b> — Four check-ins a day, with an optional note
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/prayer.jpg" width="280" alt="Prayer times"><br>
+  <b>Prayer times</b> — Calculated daily for your city; reminders follow
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/calendar.jpg" width="280" alt="Per-task calendar"><br>
+  <b>Calendar</b> — Per-task calendar, strength score, and backfill
+</p>
 
 ## Features
 
