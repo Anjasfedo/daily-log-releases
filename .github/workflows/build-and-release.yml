@@ -1,0 +1,153 @@
+name: Build from Private and Release
+
+# Public builder for Daily Log. Source lives in the private repo
+# Anjasfedo/daily-log; this repo only builds and publishes release APKs.
+# Triggered manually (workflow_dispatch) with a tag from the private repo.
+# repository_dispatch is kept so an automatic private trigger can be added later.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag in Anjasfedo/daily-log to build (e.g. v0.15.0-32ea42c)"
+        required: true
+        type: string
+  repository_dispatch:
+    types: [build-release]
+
+permissions:
+  contents: write # Publish releases on this public repo
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build signed release APK
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.event.client_payload.tag }}
+    steps:
+      # 1. Clone private repo into a temporary 'private-src' directory
+      - name: Checkout private source
+        uses: actions/checkout@v4
+        with:
+          repository: Anjasfedo/daily-log
+          ref: ${{ env.TAG }}
+          ssh-key: ${{ secrets.PRIVATE_REPO_DEPLOY_KEY }}
+          path: private-src
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # No Gradle wrapper in the repo; pin the version the project uses.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.4.1"
+
+      # The runner ships the SDK; setup-android fails because its default 'tools' package no longer exists.
+      - name: Install Android SDK packages
+        run: |
+          set -e
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          if [[ -z "$sdk_root" ]]; then
+            echo "::error::No Android SDK on this runner"
+            exit 1
+          fi
+          sdkmanager=$(find "$sdk_root/cmdline-tools" -type f -name sdkmanager -print -quit)
+          if [[ -z "$sdkmanager" ]]; then
+            echo "::error::sdkmanager not found under $sdk_root/cmdline-tools"
+            exit 1
+          fi
+          yes | "$sdkmanager" --licenses > /dev/null
+          "$sdkmanager" --install "platforms;android-37.0"
+
+      - name: Recreate signing material
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing repository secret $name"
+              exit 1
+            fi
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+          # User-home gradle.properties beats the project one.
+          props="${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"
+          mkdir -p "$(dirname "$props")"
+          {
+            echo "dailyLogStoreFile=$RUNNER_TEMP/release.keystore"
+            echo "dailyLogStorePassword=$KEYSTORE_PASSWORD"
+            echo "dailyLogKeyAlias=$KEY_ALIAS"
+            echo "dailyLogKeyPassword=$KEY_PASSWORD"
+          } >> "$props"
+
+      # 2. Extract only this version's section from the private CHANGELOG.md.
+      # Tags carry a short SHA (v0.15.0-32ea42c); CHANGELOG headings use the
+      # plain version (## [v0.15.0]), so match on the version, not the tag.
+      # Uses index() (literal match) — the heading's brackets would break a regex match.
+      # Never cat release_notes.md: it is passed to the release only via body_path.
+      - name: Extract release notes
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          version=$(echo "$TAG" | sed -E 's/^v//; s/-[0-9a-f]{7}$//')
+          if [ -f private-src/CHANGELOG.md ]; then
+            awk -v tag="## [v$version]" '
+              index($0, tag)==1 { flag=1; next }
+              /^## \[/ { flag=0 }
+              flag { print }
+            ' private-src/CHANGELOG.md > release_notes.md
+          fi
+          if [ ! -s release_notes.md ]; then
+            echo "Release $TAG" > release_notes.md
+          fi
+
+      - name: Build release APK
+        working-directory: private-src
+        run: gradle :app:assembleRelease --console=plain
+
+      # 3. Stage the APK under its public name, then wipe the private source.
+      - name: Stage APK and wipe private source
+        run: |
+          set -euo pipefail
+          version=$(grep -oP "versionName '\K[^']+" private-src/app/build.gradle)
+          apk=$(find private-src/app/build/outputs/apk/release -maxdepth 1 -name '*.apk' -print -quit)
+          if [[ -z "$apk" ]]; then
+            echo "::error::No release APK under private-src/app/build/outputs/apk/release"
+            exit 1
+          fi
+          cp "$apk" "dist/daily-log-$version.apk"
+          echo "version=$version" >> "$GITHUB_ENV"
+          rm -rf private-src
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-log-${{ env.version }}
+          path: dist/*.apk
+          retention-days: 14
+          if-no-files-found: error
+
+      # 4. Publish the release on this public repo.
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Daily Log ${{ env.version }}
+          generate_release_notes: false # Keep false so private commit messages aren't leaked
+          body_path: release_notes.md
+          files: dist/*.apk
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/release.keystore"
+          sed -i '/^dailyLog/d' "${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties" 2>/dev/null || true
