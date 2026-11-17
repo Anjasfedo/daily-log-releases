@@ -8,13 +8,35 @@
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/screenshots/today.jpg" width="160" alt="Today — tasks grouped by time of day">
-  <img src="docs/screenshots/progress.jpg" width="160" alt="Progress — weekly overview and insights">
-  <img src="docs/screenshots/mood.jpg" width="160" alt="Mood check-in with note">
-  <img src="docs/screenshots/prayer.jpg" width="160" alt="Prayer times for Bengkulu">
-  <img src="docs/screenshots/calendar.jpg" width="160" alt="Per-task calendar and strength score">
-</p>
+<table>
+  <tr>
+    <td align="center" width="20%">
+      <img src="docs/screenshots/today.jpg" width="160" alt="Today"><br>
+      <b>Today</b><br>
+      <sub>Tasks grouped by time of day, one group at a time</sub>
+    </td>
+    <td align="center" width="20%">
+      <img src="docs/screenshots/progress.jpg" width="160" alt="Progress"><br>
+      <b>Progress</b><br>
+      <sub>Weekly overview, perfect days, and insights</sub>
+    </td>
+    <td align="center" width="20%">
+      <img src="docs/screenshots/mood.jpg" width="160" alt="Mood check-in"><br>
+      <b>Mood</b><br>
+      <sub>Four check-ins a day, with an optional note</sub>
+    </td>
+    <td align="center" width="20%">
+      <img src="docs/screenshots/prayer.jpg" width="160" alt="Prayer times"><br>
+      <b>Prayer times</b><br>
+      <sub>Calculated daily for your city; reminders follow</sub>
+    </td>
+    <td align="center" width="20%">
+      <img src="docs/screenshots/calendar.jpg" width="160" alt="Per-task calendar"><br>
+      <b>Calendar</b><br>
+      <sub>Per-task calendar, strength score, and backfill</sub>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
